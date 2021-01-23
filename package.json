@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
     "aws-sdk": "^2.831.0",
     "puppeteer": "^5.5.0"
