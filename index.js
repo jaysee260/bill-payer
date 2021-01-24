@@ -12,21 +12,20 @@ const puppeteer = require('puppeteer');
 	const PAY_AMOUNT_FIELD_ID = 'ctl00_ctl00_LayoutArea_MainContent_Transaction1_AmtTextBox';
 	const ADD_TO_CART_BUTTON_ID = 'ctl00_ctl00_LayoutArea_MainContent_Transaction1_lbtnAddToCart';
 	const CHECKOUT_BUTTON = 'btnCheckout';
+	const CHECKOUT_AS_GUEST_BUTTON_ID = 'ctl00_ctl00_LayoutArea_MainContent_SignIn1_btnCheckOutGuest';
+	const CHECKOUT_AS_GUEST_PROCEED_BUTTON_ID = 'ctl00_ctl00_LayoutArea_MainContent_BillingInfo1_btnProceed';
 
 	// Go to page
 	await page.goto('https://neld.net');
 	logInfo('Landed on neld.net');
-	await page.screenshot({ path: 'steps/1-neld-landing-page.png', fullPage: true });
+	await takeScreenshot(page, 'steps/1-neld-landing-page.png');
 
 	// Select service to pay
-	// this doesn't work?
-	// const element = await page.$('area[alt="Electric Online Payment"]');
-	// await element.click();
 	logInfo(`Clicking through ${SERVICE_TO_PAY} page`);
 	await page.$eval(`area[alt="${SERVICE_TO_PAY}"]`, area => area.click());
-	await page.waitForSelector(`#${ACCOUNT_NUMBER_FIELD_ID}`, { visible: true });
+	await waitForSelector(page, ACCOUNT_NUMBER_FIELD_ID);
 	logInfo(`Landed on ${SERVICE_TO_PAY} page`)
-	await page.screenshot({ path: 'steps/2-electric-payment-page.png', fullPage: true });
+	await takeScreenshot(page, 'steps/2-electric-payment-page.png');
 
 	// Enter account number
 	logInfo('Pulling electric account number from (TBD)');
@@ -37,16 +36,13 @@ const puppeteer = require('puppeteer');
 		(field, accountNumber) => field.setAttribute('value', accountNumber),
 		ELECTRIC_ACCOUNT_NUMBER
 	);
-	await page.screenshot({ path: 'steps/3-set-account-number.png', fullPage: true });
+	await takeScreenshot(page, 'steps/3-set-account-number.png');
 
 	// Continue
 	logInfo('Retrieving account information');
-	await page.$eval(
-		`#${ACCOUNT_NUMBER_PAGE_CONTINUE_BUTTON_ID}`,
-		button => button.click()
-	);
-	await page.waitForSelector(`#${AMOUNT_DUE_LABEL_ID}`, { visible: true });
-	await page.screenshot({ path: 'steps/4-continue-after-setting-account-number.png', fullPage: true });
+	await click(page, ACCOUNT_NUMBER_PAGE_CONTINUE_BUTTON_ID);
+	await waitForSelector(page, AMOUNT_DUE_LABEL_ID);
+	await takeScreenshot(page, 'steps/4-continue-after-setting-account-number.png');
 
 	// Get Amount Due
 	logInfo('Retrieving Amount Due')
@@ -74,17 +70,40 @@ const puppeteer = require('puppeteer');
 		(field, paymentAmount) => field.setAttribute('value', paymentAmount),
 		amountDue
 	);
-	await page.screenshot({ path: 'steps/5-set-payment-amount.png', fullPage: true });
+	await takeScreenshot(page, 'steps/5-set-payment-amount.png');
 
 	// Add to Cart
 	logInfo('Adding payment to cart');
-	await page.$eval(`#${ADD_TO_CART_BUTTON_ID}`, button => button.click());
-	await page.waitForSelector(`#${CHECKOUT_BUTTON}`, { visible: true });
-	await page.screenshot({ path: 'steps/6-payment-checkout-page.png', fullPage: true });
+	await click(page, ADD_TO_CART_BUTTON_ID);
+	await waitForSelector(page, CHECKOUT_BUTTON);
+	await takeScreenshot(page, 'steps/6-view-cart-page.png');
+
+	// Proceed with checkout
+	logInfo('Proceeding with checkout');
+	await click(page, CHECKOUT_BUTTON);
+	await waitForSelector(page, CHECKOUT_AS_GUEST_BUTTON_ID);
+	await takeScreenshot(page, 'steps/7-checkout-options-page.png');
+
+	// Checkout as guest
+	logInfo('Checking out as guest');
+	await click(page, CHECKOUT_AS_GUEST_BUTTON_ID);
+	await waitForSelector(page, CHECKOUT_AS_GUEST_BUTTON_ID)
 
 	await browser.close();
 })();
 
 function logInfo(message) {
 	console.log(`========== ${message} ==========`);
+}
+
+async function click(page, buttonId) {
+	await page.$eval(`#${buttonId}`, button => button.click());
+}
+
+async function waitForSelector(page, selector) {
+	await page.waitForSelector(`#${selector}`, { visible: true });
+}
+
+async function takeScreenshot(page, path) {
+	await page.screenshot({ path, fullPage: true });
 }
