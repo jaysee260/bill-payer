@@ -21,6 +21,15 @@ resource "aws_secretsmanager_secret" "bill_payer_config_values" {
 resource "aws_secretsmanager_secret_version" "payment_details" {
   secret_id     = aws_secretsmanager_secret.bill_payer_config_values.id
   secret_string = jsonencode({
+    electricAccountNumber = "<redacted>"
+    cableAccountNumber = "<redacted>"
+    address1 = "<redacted>"
+    address2 = "<redacted>"
+    city = "<redacted>"
+    state = "<redacted>"
+    zip = "<redacted>"
+    phone = "<redacted>"
+    email = "<redacted>"
     bankAccountNumber = "<redacted>"
     routingNumber = "<redacted>"
   })
